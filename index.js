@@ -1,28 +1,23 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, Events } from "discord.js";
 import http from "http";
 
-// ==============================
-// Discord client
-// ==============================
+// =====================
+// DISCORD CLIENT
+// =====================
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.MessageContent, // ⚠️ nécessite l’intent activé sur le portal
   ],
 });
 
-// ==============================
-// Ready
-// ==============================
-client.once("ready", () => {
+client.once(Events.ClientReady, () => {
   console.log(`✅ Bot connecté en tant que ${client.user.tag}`);
 });
 
-// ==============================
-// Exemple message handler
-// ==============================
-client.on("messageCreate", async (message) => {
+// Exemple simple : répondre à !ping
+client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
 
   if (message.content === "!ping") {
@@ -30,60 +25,37 @@ client.on("messageCreate", async (message) => {
   }
 });
 
-// ==============================
-// Login Discord
-// ==============================
+// Connexion Discord
+if (!process.env.DISCORD_TOKEN) {
+  console.error("❌ DISCORD_TOKEN manquant");
+  process.exit(1);
+}
+
 client.login(process.env.DISCORD_TOKEN);
 
-// ==============================
-// HTTP server (OBLIGATOIRE pour Railway)
-// ==============================
-const PORT = process.env.PORT || 3000;
+// =====================
+// HTTP SERVER (Railway)
+// =====================
+const PORT = process.env.PORT || 8080;
 
-http
-  .createServer((req, res) => {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end("OK");
-  })
-  .listen(PORT, () => {
-    console.log(`🌐 HTTP server listening on port ${PORT}`);
-  });
-
-// ==============================
-// Graceful shutdown (Railway)
-// ==============================
-process.on("SIGTERM", async () => {
-  console.log("🛑 SIGTERM received, shutting down gracefully");
-  try {
-    await client.destroy();
-  } catch (e) {
-    console.error(e);
-  }
-  process.exit(0);
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("OK");
 });
 
-process.on("SIGINT", async () => {
-  console.log("🛑 SIGINT received, shutting down gracefully");
-  try {
-    await client.destroy();
-  } catch (e) {
-    console.error(e);
-  }
-  process.exit(0);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`🌍 HTTP server listening on port ${PORT}`);
 });
 
-// ==============================
-// Keep process alive
-// ==============================
-setInterval(() => {}, 60 * 60 * 1000);
-import express from "express";
-const app = express();
-
-app.get("/", (req, res) => {
-  res.status(200).send("OK");
+// =====================
+// GRACEFUL SHUTDOWN
+// =====================
+process.on("SIGTERM", () => {
+  console.log("🛑 SIGTERM reçu, arrêt propre...");
+  server.close(() => process.exit(0));
 });
 
-app.listen(8080, () => {
-  console.log("HTTP server listening on port 8080");
+process.on("SIGINT", () => {
+  console.log("🛑 SIGINT reçu, arrêt propre...");
+  server.close(() => process.exit(0));
 });
-
