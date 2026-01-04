@@ -107,4 +107,17 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+// --- Railway keep-alive & restart workaround ---
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received, forcing restart");
+  process.exit(1);
+});
+
+process.on("SIGINT", () => {
+  console.log("SIGINT received, forcing restart");
+  process.exit(1);
+});
+
+// Keep the process alive
+setInterval(() => {}, 60 * 60 * 1000);
 
