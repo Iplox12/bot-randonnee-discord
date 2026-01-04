@@ -1,0 +1,13 @@
+{
+  "name": "bot-randonnee-discord",
+  "version": "1.0.0",
+  "description": "Bot Discord pour organiser des randonnées",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1"
+  }
+}
