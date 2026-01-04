@@ -76,3 +76,14 @@ process.on("SIGINT", async () => {
 // Keep process alive
 // ==============================
 setInterval(() => {}, 60 * 60 * 1000);
+import express from "express";
+const app = express();
+
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
+
+app.listen(8080, () => {
+  console.log("HTTP server listening on port 8080");
+});
+
